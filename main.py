@@ -2,15 +2,13 @@ import requests
 import json
 import pyrfc6266
 
-
-
+# codes very 
 def search(term: str):
     offset = 0
     limit = 50
-    # count how many items
     itemsCount = None
 
-    # this code is full of laziness
+
     git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/search/keywords?q={term}&_limit=50&_offset={offset}&_sort=%2BstartTime').json()
     data = git.get("data")
     itemsCount = data.get("total")
@@ -25,13 +23,9 @@ def search(term: str):
     # wtf
     if itemsCount < 50:
         return "done"
-
-    # should complete
     offset += 50
-        # print(offset)
 
     while offset != itemsCount:        
-        # print(f'https://public-api.commons.nicovideo.jp/v1/materials/search/keywords?q={term}&_limit=50&_offset={offset}&_sort=%2BstartTime')
         whypls = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/search/keywords?q={term}&_limit=50&_offset={offset}&_sort=%2BstartTime').json()
         helpme = whypls["data"]["materials"]
         if helpme is None:
