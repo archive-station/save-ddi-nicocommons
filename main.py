@@ -1,5 +1,4 @@
 import requests
-import pyperclip
 
 def search(term: str):
     offset = 0
@@ -7,17 +6,42 @@ def search(term: str):
     # count how many items
     itemsCount = None
 
-    git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/search/keywords?q={term}&_limit=50&_offset=0&_sort=%2BstartTime').json()
+    # this code is full of laziness
+    git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/search/keywords?q={term}&_limit=50&_offset={offset}&_sort=%2BstartTime').json()
     data = git.get("data")
     itemsCount = data.get("total")
     items = data.get("materials")
-    # print(items)
+
     for item in items:
         global_id = item.get('global_id')
         title = item.get("title")
         print(f'[-] downloading {title}')
-        download(global_id)
+        # download(global_id)
     
+    # wtf
+    if itemsCount < 50:
+        return "done"
+
+    # should complete
+    offset += 50
+
+    while offset != itemsCount:        
+        print(offset)
+        git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/search/keywords?q={term}&_limit=50&_offset={offset}&_sort=%2BstartTime').json()
+        
+        for item in items:
+            global_id = item.get('global_id')
+            title = item.get("title")
+            print(f'[-] downloading {title}')
+            # download(global_id)
+
+        if (itemsCount - offset) < 50:
+            print((itemsCount - offset))
+            offset += (itemsCount - offset)
+        else: 
+            offset += 50 
+
+
     return ":3"
 
 
