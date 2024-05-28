@@ -18,7 +18,7 @@ def search(term: str):
         global_id = item.get('global_id')
         title = item.get("title")
         print(f'[-] downloading {title}')
-        grab_metadata(global_id)
+        download(global_id)
     
     # wtf
     if itemsCount < 50:
@@ -37,11 +37,7 @@ def search(term: str):
             
             title = v.get("title")
             print(f'[-] downloading {title}, {i}')
-            if global_id != "nc15136":
-                grab_metadata(global_id)
-            else:
-                print("KILL YOURSELF nc15136")
-
+            download(global_id)
 
         if (itemsCount - offset) < 50:
             # print((itemsCount - offset))
