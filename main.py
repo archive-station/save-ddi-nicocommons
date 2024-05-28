@@ -24,7 +24,7 @@ def search(term: str):
 def grab_metadata(url: str):
    url = url.split('nc')[1]
    git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/{url}').json()
-   # return
+
    return git
 
 
