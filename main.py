@@ -1,4 +1,5 @@
 import requests
+import json
 
 def search(term: str):
     offset = 0
@@ -46,8 +47,11 @@ def search(term: str):
 
 
 def grab_metadata(url: str):
-   url = url.split('nc')[1]
-   git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/{url}').json()
+   important_part = url.split('nc')[1]
+   git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/{important_part}').json()
+
+   with open(f"{url}_metadata.json", mode="w", encoding="utf-8") as f:
+        f.write(json.dumps(git))
 
    return git
 
@@ -58,5 +62,5 @@ def download(url: str):
     
 
 if __name__ == '__main__':
-    search('%E3%81%A9%E3%81%93%E3%81%A7%E3%82%82%E3%81%84%E3%81%A3%E3%81%97%E3%82%87')
+    #search('%E3%81%A9%E3%81%93%E3%81%A7%E3%82%82%E3%81%84%E3%81%A3%E3%81%97%E3%82%87')
     download('nc15531')
