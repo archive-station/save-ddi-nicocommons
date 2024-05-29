@@ -2,7 +2,6 @@ import requests
 import json
 import pyrfc6266
 
-# codes very
 def search_user(userId: str):
     offset = 0
     limit = 10
@@ -25,7 +24,7 @@ def search_user(userId: str):
     offset += 10
 
     while offset != itemsCount:
-        whypls = git = requests.get(f"https://public-api.commons.nicovideo.jp/v1/materials/search/tags?_limit=10&_offset={offset}&_sort=-startTime&filters[userId][0]={userId}").json()
+        whypls = requests.get(f"https://public-api.commons.nicovideo.jp/v1/materials/search/tags?_limit=10&_offset={offset}&_sort=-startTime&filters[userId][0]={userId}").json()
         helpme = whypls["data"]["materials"]
         if helpme is None:
             break
@@ -89,7 +88,6 @@ def search(term: str):
 def grab_metadata(url: str):
    important_part = url.split('nc')[1]
    git = requests.get(f'https://public-api.commons.nicovideo.jp/v1/materials/{important_part}').json()
-#    print(git.get("meta").get("status"))
    with open(f"{url}_metadata.json", mode="w", encoding="utf-8") as f:
         f.write(json.dumps(git, ensure_ascii=False))
 
@@ -125,7 +123,6 @@ def download_file(url):
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
         }
 
-        params = ''
         response2 = requests.post(f'https://public-api.commons.nicovideo.jp/v1/materials/{important_part}/download-session', cookies=cookies, headers=headers2).json()
         data = response2.get('data')
         timestamp = data.get('time')
