@@ -2,7 +2,47 @@ import requests
 import json
 import pyrfc6266
 
-# codes very 
+# codes very
+def search_user(userId: str):
+    offset = 0
+    limit = 10
+    itemsCount = None
+
+    git = requests.get(f"https://public-api.commons.nicovideo.jp/v1/materials/search/tags?_limit=10&_offset={offset}&_sort=-startTime&filters[userId][0]={userId}").json()
+    data = git.get("data")
+    itemsCount = data.get("total")
+    items = data.get("materials")
+
+    for item in items:
+        # print(item)
+        global_id = item.get('global_id')
+        title = item.get("title")
+        print(f'[-] downloading {title}')
+        download(global_id)
+
+    if itemsCount < 10:
+        return "done"
+    offset += 10
+
+    while offset != itemsCount:
+        whypls = git = requests.get(f"https://public-api.commons.nicovideo.jp/v1/materials/search/tags?_limit=10&_offset={offset}&_sort=-startTime&filters[userId][0]={userId}").json()
+        helpme = whypls["data"]["materials"]
+        if helpme is None:
+            break
+
+        for i, v in enumerate(helpme):
+            global_id = v.get('global_id')
+            
+            title = v.get("title")
+            print(f'[-] downloading {title}, {i}')
+            download(global_id)
+
+        if (itemsCount - offset) < 10:
+            offset += (itemsCount - offset)
+        else: 
+            offset += 10 
+
+
 def search(term: str):
     offset = 0
     limit = 50
@@ -32,15 +72,12 @@ def search(term: str):
             break
 
         for i, v in enumerate(helpme):
-            print(offset + i)
             global_id = v.get('global_id')
-            
             title = v.get("title")
             print(f'[-] downloading {title}, {i}')
             download(global_id)
 
         if (itemsCount - offset) < 50:
-            # print((itemsCount - offset))
             offset += (itemsCount - offset)
         else: 
             offset += 50 
@@ -60,8 +97,7 @@ def grab_metadata(url: str):
 
 def download_file(url):
     try:
-        # insert cookies
-        # made in a rush
+        important_part = url.split('nc')[1]
         cookies = {
             'nicosid': '',
             'lang': 'en-us',
@@ -71,33 +107,12 @@ def download_file(url):
             'common-header-oshirasebox-newest': '',
         }
 
-        headers = {
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8, image/jxl',
-            'accept-language': 'en-US,en;q=0.9',
-            'cache-control': 'no-cache',
-            'pragma': 'no-cache',
-            'priority': 'u=0, i',
-            'sec-ch-ua': '"Brave";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-site': 'cross-site',
-            'sec-fetch-user': '?1',
-            'sec-gpc': '1',
-            'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        }
-
-        response = requests.get(f'https://commons.nicovideo.jp/works/agreement/{url}', cookies=cookies, headers=headers)
-
         headers2 = {
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8, image/jxl',
             'accept-language': 'en-US,en;q=0.9',
             'cache-control': 'no-cache',
             'pragma': 'no-cache',
             'priority': 'u=0, i',
-            'referer': 'https://commons.nicovideo.jp/works/agreement/nc15531',
             'sec-ch-ua': '"Brave";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
@@ -111,23 +126,26 @@ def download_file(url):
         }
 
         params = ''
-        response2 = requests.get(f'https://commons.nicovideo.jp/material/download/{url}', params=params, cookies=cookies, headers=headers)
-        # print(response2.url)
+        response2 = requests.post(f'https://public-api.commons.nicovideo.jp/v1/materials/{important_part}/download-session', cookies=cookies, headers=headers2).json()
+        data = response2.get('data')
+        timestamp = data.get('time')
+        token = data.get('token')
+        res3 = requests.get(f'https://deliver.commons.nicovideo.jp/download/{url}?token={token}&time={timestamp}', cookies=cookies, headers=headers2)
 
-        response2.raise_for_status()
-        if response2.headers.get('content-disposition') == None:
+        res3.raise_for_status()
+        if res3.headers.get('content-disposition') == None:
             print("FILES BROKEN")
             return "fail"
 
-        d = response2.headers['content-disposition']
+        d = res3.headers['content-disposition']
 
         get_file = pyrfc6266.parse_filename(d)
 
         with open(get_file, 'wb') as f:
-            for chunk in response2.iter_content(chunk_size=8192): 
+            for chunk in res3.iter_content(chunk_size=8192): 
                 f.write(chunk)
     except:
-        print('error catched on: ', url)
+        print('something went wrong!, url: ', url)
 
 
 def download(url: str):
@@ -139,4 +157,5 @@ def download(url: str):
 if __name__ == '__main__':
     # search('%E3%81%A9%E3%81%93%E3%81%A7%E3%82%82%E3%81%84%E3%81%A3%E3%81%97%E3%82%87')
     # download('nc15433')
+    # search_user('12574891')
     pass
